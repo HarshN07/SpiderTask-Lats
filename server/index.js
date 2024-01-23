@@ -3,9 +3,15 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
 const messageRoutes = require("./routes/messages");
+const session = require("express-session");
+const RedisStore = require("connect-redis")(session);
+
 const app = express();
+const server = require("http").Server(app);
 const socket = require("socket.io");
 require("dotenv").config();
+const io=socket(server)
+
 
 app.use(cors());
 app.use(express.json());
@@ -24,15 +30,10 @@ mongoose.connect(uri,{
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-const server = app.listen(process.env.PORT, () =>
+server.listen(process.env.PORT, () =>
   console.log(`Server started on ${process.env.PORT}`)
 );
-const io = socket(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    credentials: true,
-  },
-});
+
 
 global.onlineUsers = new Map();
 io.on("connection", (socket) => {
